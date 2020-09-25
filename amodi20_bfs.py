@@ -1,7 +1,9 @@
 import os
 import time
+from collections import deque
 
 import psutil
+
 
 # Method tp check if two lists are equal.
 def checkEQ(list1, list2):
@@ -11,7 +13,9 @@ def checkEQ(list1, list2):
         return False
 
 
-movesList = []   # Empty List. Will contain all the moves made to reach the solution.
+movesList = []  # Empty List. Will contain all the moves made to reach the solution.
+moveValue = ''
+
 
 # Method to evaluate moves made.
 def moves(input):
@@ -23,52 +27,85 @@ def moves(input):
     y = boardList[x].index(0)
 
     if x > 0:  # Shifting UP
-        boardList[x][y], boardList[x-1][y] = boardList[x-1][y], boardList[x][y]
+        boardList[x][y], boardList[x - 1][y] = boardList[x - 1][y], boardList[x][y]
         list.append(str(boardList))
         movesList.append('U')
-        boardList[x][y], boardList[x-1][y] = boardList[x-1][y], boardList[x][y]
+        # moveValue = 'U'
+        boardList[x][y], boardList[x - 1][y] = boardList[x - 1][y], boardList[x][y]
 
     if x < 3:  # Shifting DOWN
-        boardList[x][y], boardList[x+1][y] = boardList[x+1][y], boardList[x][y]
+        boardList[x][y], boardList[x + 1][y] = boardList[x + 1][y], boardList[x][y]
         list.append(str(boardList))
         movesList.append('D')
-        boardList[x][y], boardList[x+1][y] = boardList[x+1][y], boardList[x][y]
+        # moveValue = 'D'
+        boardList[x][y], boardList[x + 1][y] = boardList[x + 1][y], boardList[x][y]
 
     if y > 0:  # Shifting LEFT
-        boardList[x][y], boardList[x][y-1] = boardList[x][y-1], boardList[x][y]
+        boardList[x][y], boardList[x][y - 1] = boardList[x][y - 1], boardList[x][y]
         list.append(str(boardList))
         movesList.append('L')
-        boardList[x][y], boardList[x][y-1] = boardList[x][y-1], boardList[x][y]
+        # moveValue = 'L'
+        boardList[x][y], boardList[x][y - 1] = boardList[x][y - 1], boardList[x][y]
 
     if y < 3:  # Shifting RIGHT
-        boardList[x][y], boardList[x][y+1] = boardList[x][y+1], boardList[x][y]
+        boardList[x][y], boardList[x][y + 1] = boardList[x][y + 1], boardList[x][y]
         list.append(str(boardList))
         movesList.append('R')
-        boardList[x][y], boardList[x][y+1] = boardList[x][y+1], boardList[x][y]
+        # moveValue = 'R'
+        boardList[x][y], boardList[x][y + 1] = boardList[x][y + 1], boardList[x][y]
 
     return list
 
+
+class Node:
+    def __init__(self, nodeState, nodeParent, move):
+        # print('Node init')
+        self.nodeState = nodeState
+        self.nodeParent = nodeParent
+        self.move = move
+
+
+def path(node):
+    pathList = []
+    while node.nodeParent not in None:
+        pathList.append(node.move)
+        node = node.nodeParent
+    pathList.reverse()
+    return pathList
+
+
 # Breadth First Search Algorithm
 def BFS(initialBoard, finalBoard):
+    nodeDict = {}
     visitedList = []
     nodeCount = 0
     list = [[initialBoard]]
+    frontier = deque(list)
+    # print('Frontier: ' + str(frontier))
+    # value = ''
 
     while True:
+        global moveValue
         x = 0
         listElement = list[x]
         list = list[:x] + list[x + 1:]
         lastElement = listElement[-1]
+        # currentNode = frontier.popleft()
 
         for move in moves(lastElement):
             if move in visitedList:
                 continue
             else:
+                nodeDict[lastElement] = move + moveValue
+                moveValue = nodeDict.get(lastElement)
                 list.append(listElement + [move])
+                # print(moveValue)
         visitedList.append(lastElement)
         nodeCount = nodeCount + 1
 
         if checkEQ(lastElement, finalBoard):
+            # path(currentNode)
+            # print(moveValue)
             break
     print('Nodes expanded: ' + str(nodeCount))
 
@@ -80,14 +117,15 @@ def inputFormat(userInput):
     newUserInput = [str(k) for k in userInput.split(',')]
     newUserInput = list(map(int, newUserInput))
     for i in range(0, len(newUserInput), 4):
-        newList.append(newUserInput[i:i+4])
+        newList.append(newUserInput[i:i + 4])
     return newList
 
 
 # printing all the moves made to reach the solution.
-def printMoves(movelist):
-    for i in range(len(movesList)):
-        print(movesList[i], end="")
+def printMoves(list):
+    for i in range(len(list)):
+        print(list[i], end="")
+    print('\n')
 
 
 if __name__ == "__main__":
@@ -106,12 +144,6 @@ if __name__ == "__main__":
     totalTime = endTime - startTime
     print('Time taken: ' + str(totalTime))
     print('Total Memory used: ' + str(finalMemory) + ' KB')
-
-
-
-
-
-
 
 """
 Inputs: 
